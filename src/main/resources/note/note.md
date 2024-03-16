@@ -1,0 +1,15 @@
+# JDBC
+- Java DataBase Connentivity
+- 각 DBMS 드라이버에 표준인터페이스 제공
+  - java.sql.Connection : 연결
+  - java.sql.Statement : SQL을 담은 내용
+  - java.sql.ResultSet : SQL 요청 응답
+- 데이터베이스마다 SQL 사용법이 달라서, JDBC 관련 코드는 변경하지 않아고 되지만 SQL은 바꿔줘야 한다. 
+  - 하지만 이것도 JPA가 대부분 해결해준다. 
+  - SQL Mapper
+    - SQL만 직접 작성하면 나머지 번거로운 일은 SQL Mapper가 대신 해결
+    - JdbcTemplate, MyBatis
+  - ORM
+    - SQL 작성 자체를 안한다.
+    - JPA
+- 
