@@ -58,6 +58,7 @@
   - 애플리케이션에서 DB 트랜잭션을 사용하려면 **트랜잭션을 사용하는 동안 같은 커넥션을 유지**해야한다. (그래야 같은 세션을 이용할 수 있다.)
     - 파라미터를 통해 유지시키는 것을 방법으로 한다.
 
+
 # 스프링의 트랜잭션
 - 애플리케이션 계층
   1. 프레젠테이션 계층
@@ -70,16 +71,50 @@
   3. 데이터 접근 계층
      - 실제 데이터베이스에 접근하는 코드
      - 주 사용 기술 : JDBC, JPA, File, Redis, Mongo ...
+- 스프링이 해결한 이전버전들의 문제점
+  - JDBC 구현 기술이 서비스 계층에 누수되는 문제
+    - 트랜잭션 적용시, Connection을 파라미터로 넘겨주어 연결을 유지해야 함
+  - 예외 누수 : SQLException
+  - JDBC 반복문제 
+    - try, catch, finally
 
+## 스프링 트랜잭션 매니저
+- PlatformTransactionManager Interface 
+  - getTransaction()
+  - commit()
+  - rollback()
+### 트랜잭션 추상화
+- note/스프링의 트랜잭션 추상화.png
+- 서비스계층은 PlatformTransactionManager Interface에 의존함으로써 영향도를 줄였다
+ 
+### 트랜잭션 동기화
+- note/스프링의 트랜잭션 동기화 매니저.png
+- 트랜잭션을 유지하려면 트랜잭션의 시작부터 끝까지 같은 데이터베이스 커넥션을 유지해야한다.
+- 그래서 이전엔 파라미터로 넘겨주며 불편한 감이 있었다.
+- 스프링은 트랜잭션 매니저가 내부에서 트랜잭션 동기화 매니저를 통해 커넥션을 보관해두고 있기 때문에, 커넥션이 필요하면 획득하는 코드만 실행해주면 된다.
+  - TransactionSynchronizationManager
+    - `.getConnection()` : 트랜잭션 동기화 매니저가 관리하는 커넥션이 있으면 반환, 없으면 생성 후 반환 
+    - `.releaseConnetion()` : 동기화된 커넥션은 닫지 않고 유지해준다. 동기화 매니저가 관리하는 커넥션이 없는 경우 해당 커넥션을 닫는다.
+  
 ---
 # 파일 설명
 - MemberReposirotyV0
   - 순수 데이터 접근 방법
   - JDBC - DriverManager 사용
+  
 - MemberReposirotyV1
-  - 커넥션 풀 사용 with Datasource인터페이스 
+  - 커넥션 풀 사용 with **Datasource인터페이스** 
+  - **덕분에 MemberServiceV1은 기술에 종속적이지 않아졌다.**
+  
 - MemberServiceV1 
   - 트랜잭션 사용 안 한 서비스 로직
+  
 - MemberReposirotyV2,MemberServiceV2
+  - 트랜잭션 사용 한 서비스 로직  
   - Connection 유지를 위한 코드 변경 
   - Connection 파라미터화, 서비스계층에서 close
+  - 남은 문제점들
+    - `SQLException` 이라는 JDBC기술에 의존한다.
+      - 트랜잭션을 적용하기 위해 JDBC구현 기술이 서비스 계층에 누수됨 (con을 유지하기 위해 파라미터로 불러왔기 때문)
+    - 해당 부분은 Repository에서 올라오는 것이므로 해당 계층에서 해결해야 한다. (이후 예외처리 추가 예정)
+    - MemberReposirotyV2 이라는 구체 클래스에 직접 의존하고 있다. MemberReposiroty 인터페이스를 도입하면 향후 MemberService의 코드 변경 없이 다른 구현 기술로 변경이 쉽다. 
