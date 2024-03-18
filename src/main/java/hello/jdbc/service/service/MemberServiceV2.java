@@ -37,13 +37,17 @@ public class MemberServiceV2 {
             con.rollback(); // 실패시 롤백
             throw new IllegalStateException(e);
         } finally {
-            if (con != null) {
-                try {
-                    con.setAutoCommit(true);  // auto 커밋 기본값으로 다시 돌려준다.
-                    con.close();
-                } catch (Exception e) {
-                    log.info("error",e);
-                }
+            release(con);
+        }
+    }
+
+    private static void release(Connection con) {
+        if (con != null) {
+            try {
+                con.setAutoCommit(true);  // auto 커밋 기본값으로 다시 돌려준다.
+                con.close();
+            } catch (Exception e) {
+                log.info("error",e);
             }
         }
     }
