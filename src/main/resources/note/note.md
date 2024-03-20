@@ -96,6 +96,24 @@
     - `.getConnection()` : 트랜잭션 동기화 매니저가 관리하는 커넥션이 있으면 반환, 없으면 생성 후 반환 
     - `.releaseConnetion()` : 동기화된 커넥션은 닫지 않고 유지해준다. 동기화 매니저가 관리하는 커넥션이 없는 경우 해당 커넥션을 닫는다.
   
+### 트랜잭션 템플릿 
+- Service 계층에 TransactionTemplate 필드를 생성하고, 생성자에서 PlatformTransactionManager을 주입 받고, 이 트랜잭션 매니저를 템플릿으로 감싸 사용한다.
+  - 트랜잭션을 시작하고, 커밋하거나 롤백하는 코드가 모두 제거
+    - `execute()` : 응답 값이 있을 때 사용한다. 
+    - `executeWithoutResult()` : 응답 값이 없을 때 사용한다.
+    ```java
+        private final TransactionTemplate txTemplate;
+    
+       public void accountTransfer(String fromId, String toId, int money) throws SQLException {
+          txTemplate.executeWithoutResult((status) -> {
+          try {
+          bizLogic(fromId, toId, money);
+          } catch (SQLException e) {
+          throw new IllegalStateException(e);
+          }
+        }); }
+    ```
+
 ---
 # 파일 설명
 - MemberReposirotyV0
@@ -114,7 +132,11 @@
   - Connection 유지를 위한 코드 변경 
   - Connection 파라미터화, 서비스계층에서 close
   - 남은 문제점들
-    - `SQLException` 이라는 JDBC기술에 의존한다.
+    1.`SQLException` 이라는 JDBC기술에 의존한다.
       - 트랜잭션을 적용하기 위해 JDBC구현 기술이 서비스 계층에 누수됨 (con을 유지하기 위해 파라미터로 불러왔기 때문)
-    - 해당 부분은 Repository에서 올라오는 것이므로 해당 계층에서 해결해야 한다. (이후 예외처리 추가 예정)
-    - MemberReposirotyV2 이라는 구체 클래스에 직접 의존하고 있다. MemberReposiroty 인터페이스를 도입하면 향후 MemberService의 코드 변경 없이 다른 구현 기술로 변경이 쉽다. 
+    2. 해당 부분은 Repository에서 올라오는 것이므로 해당 계층에서 해결해야 한다. (이후 예외처리 추가 예정)
+    3. MemberReposirotyV2 이라는 구체 클래스에 직접 의존하고 있다. MemberReposiroty 인터페이스를 도입하면 향후 MemberService의 코드 변경 없이 다른 구현 기술로 변경이 쉽다. 
+- MemberRepositoryV3, MemberServiceV3_1
+  - 3번문제 해결 : PlatformTransactionManager
+- MemberServiceV3_2
+  - 반복되는 commit, rollback 코드를 없애준다. 
