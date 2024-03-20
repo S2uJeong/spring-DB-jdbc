@@ -119,6 +119,20 @@
   - 스프링이 자동으로 만들고 주입되는 트랜잭션 프록시가 트랜잭션 처리 로직을 모두 가져간다.
   - 트랜잭션을 시작한 후에 실제 서비스를 대신 호출한다. 호출결과에 따라 commit or rollback해준다.
 - `@Transaction` 을 통해 스프링 트랙잭션 AOP는 트랜잭션 프록시를 적용해준다. 
+
+## 스프링부트의 자동 리소스 등록
+- memberServiceV4Test.java
+- `DataSource`를 스프링 빈에 자동으로 등록해줌 : dataSource
+  - 개발자가 직접 데이터소스를 빈으로 등록하면 스프링 부트는 데이터소스를 자동으로 등록하지 않는다. 
+    - `application.properties`에 있는 속성을 사용해서 생성 및 빈에 등록
+      ```properties
+      spring.datasource.url = {}
+      spring.datasource.username = {}
+      spring.datasource.password = {}
+      ```
+    - 해당 속성이 없으면 내장 데이터베이스를 생성하려 시도하게된다. 
+- 'PlatformTransactionManager'를 자동으로 빈에 등록 : transactionManager
+  - 어떤 트랜잭션 매니저를 선택할지는 현재 등록된 라이브러리를 보고 판단한다. 
 ---
 # 파일 설명
 - MemberReposirotyV0
