@@ -113,7 +113,12 @@
           }
         }); }
     ```
-
+### 트랜잭션 AOP 이해
+- 서비스계층에 순수한 비즈니스 로직을 남기기 위해 도입 
+- 스프링 AOP를 통해 프록시를 쉽게 적용하여 문제 해결 
+  - 스프링이 자동으로 만들고 주입되는 트랜잭션 프록시가 트랜잭션 처리 로직을 모두 가져간다.
+  - 트랜잭션을 시작한 후에 실제 서비스를 대신 호출한다. 호출결과에 따라 commit or rollback해준다.
+- `@Transaction` 을 통해 스프링 트랙잭션 AOP는 트랜잭션 프록시를 적용해준다. 
 ---
 # 파일 설명
 - MemberReposirotyV0
@@ -136,7 +141,16 @@
       - 트랜잭션을 적용하기 위해 JDBC구현 기술이 서비스 계층에 누수됨 (con을 유지하기 위해 파라미터로 불러왔기 때문)
     2. 해당 부분은 Repository에서 올라오는 것이므로 해당 계층에서 해결해야 한다. (이후 예외처리 추가 예정)
     3. MemberReposirotyV2 이라는 구체 클래스에 직접 의존하고 있다. MemberReposiroty 인터페이스를 도입하면 향후 MemberService의 코드 변경 없이 다른 구현 기술로 변경이 쉽다. 
-- MemberRepositoryV3, MemberServiceV3_1
+- MemberRepositoryV3
+  - 1번 문제 해결 
+  - 트랜잭션 동기화 매니저를 통한 커넥션 획득 및 종료 
+    - DataSourceUtils.getConnection()
+    - DataSourceUtils.releaseConnection()
+- MemberServiceV3_1
   - 3번문제 해결 : PlatformTransactionManager
 - MemberServiceV3_2
   - 반복되는 commit, rollback 코드를 없애준다. 
+  - 트랜잭션 템플릿 패턴 
+- MemberServiceV3_3
+  - 트랜잭션 AOP 적용
+  - 서비스계층에서 트랜잭션 처리 로직 아예 제거 완료 
