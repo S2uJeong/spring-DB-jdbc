@@ -3,6 +3,7 @@ package hello.jdbc.service;
 import hello.jdbc.domain.Member;
 import hello.jdbc.repository.MemberRepository;
 import hello.jdbc.repository.MemberRepositoryV4_1;
+import hello.jdbc.repository.MemberRepositoryV4_2;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -38,12 +39,14 @@ class MemberServiceV4Test {
     @TestConfiguration
     static class TestConfig {
         private final DataSource dataSource;
+
         public TestConfig(DataSource dataSource) { // DataSource는 스프링에서 생성하고 주입해준다.
             this.dataSource = dataSource;
         }
         @Bean
         MemberRepository memberRepository() {
-            return new MemberRepositoryV4_1(dataSource);
+            // return new MemberRepositoryV4_1(dataSource);
+            return new MemberRepositoryV4_2(dataSource); // Spring 예외 추상화 사용 버전
         }
         @Bean
         MemberServiceV4 memberServiceV4() {
